@@ -1,0 +1,11 @@
+{
+  "name": "보험놀이터",
+  "short_name": "보험놀이터",
+  "description": "내 보험 확인, 맞춤형 신규 보험 추천 및 가치 기반 상담 플랫폼",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#020617",
+  "orientation": "portrait",
+  "icons": []
+}
