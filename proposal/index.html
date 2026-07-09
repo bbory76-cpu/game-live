@@ -20,10 +20,159 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
     />
-    <script type="module" crossorigin src="/game-live/proposal/assets/index-Bczla0KX.js"></script>
-    <link rel="stylesheet" crossorigin href="/game-live/proposal/assets/index-l31E_0L-.css">
+    <script type="module" crossorigin src="/game-live/proposal/assets/index-Ce_QqbPt.js"></script>
+    <link rel="stylesheet" crossorigin href="/game-live/proposal/assets/index-BuIuXqEz.css">
   </head>
   <body translate="no" class="notranslate">
-    <div id="root" translate="no" class="notranslate"></div>
+    <div id="root" translate="no" class="notranslate"></div>
+    <script>
+      // Route mobile non-Chrome login attempts to Chrome, appended per project rule.
+      (() => {
+        const chromeLoginCopy = {
+          title: 'Chrome에서 로그인해 주세요',
+          body: 'Google 로그인은 Chrome에서 가장 안정적으로 작동합니다. 아래 버튼을 누르면 같은 페이지가 Chrome으로 열립니다.',
+          button: 'Chrome에서 열기',
+          close: '닫기'
+        };
+
+        function isAndroid() {
+          return /Android/i.test(navigator.userAgent || '');
+        }
+
+        function isIOS() {
+          return /iPhone|iPad|iPod/i.test(navigator.userAgent || '');
+        }
+
+        function isChromeLike() {
+          const ua = navigator.userAgent || '';
+          const hasChrome = /Chrome\/|CriOS\//i.test(ua);
+          const excluded = /NAVER|Whale|KAKAOTALK|FBAN|FBAV|Instagram|Line\/|Edg\/|EdgiOS|SamsungBrowser|Firefox|FxiOS|OPR\/|Opera|; wv\)|\bwv\b/i.test(ua);
+          return hasChrome && !excluded;
+        }
+
+        function shouldRouteLoginToChrome() {
+          if (isChromeLike()) return false;
+          return isAndroid() || isIOS() || /NAVER|Whale|KAKAOTALK|FBAN|FBAV|Instagram|Line\//i.test(navigator.userAgent || '');
+        }
+
+        function getChromeLoginUrl() {
+          const url = new URL(window.location.href);
+          url.searchParams.set('login', '1');
+          url.searchParams.set('from_browser', 'chrome');
+          return url.toString();
+        }
+
+        function getAndroidChromeIntent(url) {
+          const target = new URL(url);
+          const path = `${target.host}${target.pathname}${target.search}${target.hash}`;
+          return `intent://${path}#Intent;scheme=${target.protocol.replace(':', '')};package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent(url)};end`;
+        }
+
+        function getIOSChromeUrl(url) {
+          const target = new URL(url);
+          const scheme = target.protocol === 'https:' ? 'googlechromes' : 'googlechrome';
+          return `${scheme}://${target.host}${target.pathname}${target.search}${target.hash}`;
+        }
+
+        function showChromeLoginPrompt() {
+          let prompt = document.getElementById('pm-chrome-login-prompt');
+          if (!prompt) {
+            const style = document.createElement('style');
+            style.textContent = `
+              .pm-chrome-login-prompt {
+                position: fixed; inset: 0; z-index: 3000; display: flex; align-items: center; justify-content: center;
+                padding: 22px; background: rgba(15, 23, 42, 0.48); backdrop-filter: blur(4px);
+              }
+              .pm-chrome-login-card {
+                width: min(360px, 100%); background: #fff; border-radius: 18px; padding: 22px;
+                box-shadow: 0 24px 70px rgba(15, 23, 42, 0.25); border: 1px solid rgba(148, 163, 184, 0.25);
+                font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+              }
+              .pm-chrome-login-card h2 { margin: 0 0 9px; color: #0f172a; font-size: 20px; line-height: 1.3; letter-spacing: 0; }
+              .pm-chrome-login-card p { margin: 0 0 18px; color: #475569; font-size: 14px; line-height: 1.55; }
+              .pm-chrome-login-actions { display: grid; gap: 9px; }
+              .pm-chrome-login-open, .pm-chrome-login-close {
+                min-height: 46px; border-radius: 12px; font-weight: 800; cursor: pointer; letter-spacing: 0;
+              }
+              .pm-chrome-login-open { border: 0; background: #2563eb; color: #fff; }
+              .pm-chrome-login-close { border: 1px solid #d7dde8; background: #fff; color: #334155; }
+            `;
+            document.head.appendChild(style);
+
+            prompt = document.createElement('div');
+            prompt.className = 'pm-chrome-login-prompt';
+            prompt.id = 'pm-chrome-login-prompt';
+            prompt.innerHTML = `
+              <section class="pm-chrome-login-card" role="dialog" aria-modal="true" aria-labelledby="pm-chrome-login-title">
+                <h2 id="pm-chrome-login-title">${chromeLoginCopy.title}</h2>
+                <p>${chromeLoginCopy.body}</p>
+                <div class="pm-chrome-login-actions">
+                  <button class="pm-chrome-login-open" type="button">${chromeLoginCopy.button}</button>
+                  <button class="pm-chrome-login-close" type="button">${chromeLoginCopy.close}</button>
+                </div>
+              </section>
+            `;
+            document.body.appendChild(prompt);
+            prompt.querySelector('.pm-chrome-login-open').addEventListener('click', openLoginInChrome);
+            prompt.querySelector('.pm-chrome-login-close').addEventListener('click', () => prompt.remove());
+          }
+        }
+
+        function openLoginInChrome() {
+          const url = getChromeLoginUrl();
+          showChromeLoginPrompt();
+          if (isAndroid()) {
+            window.location.href = getAndroidChromeIntent(url);
+            return;
+          }
+          if (isIOS()) {
+            window.location.href = getIOSChromeUrl(url);
+          }
+        }
+
+        function isLoginTarget(target) {
+          const marked = target.closest?.('[data-auth-open="true"]');
+          if (marked) return true;
+          const button = target.closest?.('button');
+          if (!button) return false;
+          const text = (button.textContent || '').replace(/\s+/g, ' ').trim();
+          return /로그인|sign in|login|google/i.test(text);
+        }
+
+        function clickLoginButtonWhenReady() {
+          let tries = 0;
+          const timer = window.setInterval(() => {
+            const button = document.querySelector('[data-auth-open="true"]');
+            if (button) {
+              window.clearInterval(timer);
+              button.click();
+              return;
+            }
+            tries += 1;
+            if (tries > 40) window.clearInterval(timer);
+          }, 150);
+        }
+
+        document.addEventListener('click', (event) => {
+          if (!shouldRouteLoginToChrome()) return;
+          if (!event.target || !isLoginTarget(event.target)) return;
+          event.preventDefault();
+          event.stopPropagation();
+          openLoginInChrome();
+        }, true);
+
+        document.addEventListener('DOMContentLoaded', () => {
+          const params = new URLSearchParams(window.location.search);
+          if (params.get('login') !== '1') return;
+          if (shouldRouteLoginToChrome() && params.get('from_browser') !== 'chrome') {
+            window.setTimeout(openLoginInChrome, 350);
+            return;
+          }
+          if (isChromeLike()) {
+            clickLoginButtonWhenReady();
+          }
+        });
+      })();
+    </script>
   </body>
 </html>
